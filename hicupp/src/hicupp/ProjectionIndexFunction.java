@@ -58,9 +58,10 @@ public class ProjectionIndexFunction implements Function {
       return d * d * phi;
     }
   };
-
+  
   private static final String[] projectionIndices = {
     "Shape",
+		"Mixed",
     "Entropy",
     "L1",
     "Hellinger's",
@@ -69,7 +70,8 @@ public class ProjectionIndexFunction implements Function {
     "Cook's"
   };
   
-  public static final int FRIEDMANS_PROJECTION_INDEX = 4;
+	public static final int MIXED_PROJECTION_INDEX = 1;
+  public static final int FRIEDMANS_PROJECTION_INDEX = 5;
 
   public static String[] getProjectionIndexNames() {
     return projectionIndices;
@@ -133,8 +135,9 @@ public class ProjectionIndexFunction implements Function {
         standardDeviation = Math.sqrt(variance);
       }
       
-      for (int i = 0; i < values.length; i++)
-        values[i] = (values[i] - mean) / standardDeviation;
+			// if (projectionIndex != MIXED_PROJECTION_INDEX)
+			for (int i = 0; i < values.length; i++)
+			  values[i] = (values[i] - mean) / standardDeviation;
       
       if (projectionIndex == 0) {    // "Shape"
         final int n = values.length;
@@ -160,6 +163,12 @@ public class ProjectionIndexFunction implements Function {
         final double k2_3 = k2 * k2 * k2;
         
         return (k3 * k3 / k2_3 + k4 * k4 / k2_3 / k2 / 4) / 12;
+			} else if (projectionIndex == 1) { // Mixed
+				final int mixcomp = 2;
+				final int iterationCount = 4;
+				MixedModel mixedModel = MixedModel.iterate(mixcomp, values, iterationCount);
+				mixedModel.dump();
+				return -mixedModel.aic;
       } else {
           
         // Sort the projected points in ascending order. (Using QuickSort.)
@@ -205,7 +214,7 @@ public class ProjectionIndexFunction implements Function {
           }
         }
       
-        final Distance distance = distances[projectionIndex - 1];
+        final Distance distance = distances[projectionIndex - 2];
         final double[] integrand = new double[M];
         for (int j = 0; j < M; j++)
           integrand[j] = distance.evaluate(fhat[j], Phi[j]);

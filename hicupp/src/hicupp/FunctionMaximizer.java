@@ -64,12 +64,24 @@ public final class FunctionMaximizer {
     // Compute initial simplex.
     final double[][] x = new double[np1][n];
     for (int i = 0; i < np1; i++) {
+			/*
       double xlim = 1;
       for (int j = 0; j < n; j++) {
         x[i][j] = (2 * Math.random() - 1) * Math.sqrt(xlim);
         xlim -= x[i][j] * x[i][j];
       }
+			*/
+			double sumsq = 0;
+			for (int j = 0; j < n; j++) {
+				double v = 2 * Math.random() - 1;
+				sumsq += v * v;
+				x[i][j] = v;
+			}
+			double norm = Math.sqrt(sumsq);
+			for (int j = 0; j < n; j++)
+				x[i][j] /= norm;
     }
+		
     
     // Compute function values.
     
@@ -81,6 +93,14 @@ public final class FunctionMaximizer {
     while (true) {
       iter++;
 
+			for (int i = 0; i < x.length; i++) {
+				double[] y = x[i];
+				for (int j = 0; j < y.length; j++)
+					System.out.print(y[j] + " ");
+				System.out.println(" => " + fx[i]);
+			}
+			System.out.println();
+			
       /*
       if (iter > 10000)
         throw new NoConvergenceException("Maximum iteration count exceeded.");
@@ -221,6 +241,8 @@ public final class FunctionMaximizer {
       }
     }
     
+		System.out.println("Optimal value: " + f);
+		
     return x[k];
   }
   
