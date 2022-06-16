@@ -80,7 +80,7 @@ jobs:
         uses: actions/upload-artifact@v2.3.0
         with:
           name: Linux release
-          path: hicupp/*.zip
+          path: hicupp/*.txz
           if-no-files-found: error
 
   macos:
