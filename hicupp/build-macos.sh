@@ -25,5 +25,5 @@ jpackage -p bin -m hicupp/hicupp.SequentialHicupp --name SequentialHicupp --type
 ditto -c -k --keepParent --sequesterRsrc SequentialHicupp.app SequentialHicupp-macos-unstapled.zip
 xcrun notarytool submit SequentialHicupp-macos-unstapled.zip --keychain-profile APPLE_ID_PASSWORD --wait
 rm SequentialHicupp-macos-unstapled.zip
-xcrun stapler staple SequentialHicupo.app
+xcrun stapler staple SequentialHicupp.app
 ditto -c -k --keepParent --sequesterRsrc SequentialHicupp.app SequentialHicupp-macos.zip
