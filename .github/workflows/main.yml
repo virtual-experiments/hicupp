@@ -90,6 +90,20 @@ jobs:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
 
+      - name: Install Apple Developer ID
+        env:
+          APPLE_DEVELOPER_ID: ${{ secrets.APPLE_DEVELOPER_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+        run: |
+          echo -n "$APPLE_DEVELOPER_ID" | base64 --decode --output apple_developer_id.p12
+          security create-keychain -p '' apple_developer_id.keychain-db
+          security set-keychain-settings -lut 21600 apple_developer_id.keychain-db
+          security unlock-keychain -p '' apple_developer_id.keychain-db
+          security import apple_developer_id.p12 -P '' -A -t cert -f pkcs12 -k apple_developer_id.keychain-db
+          security list-keychains -d user -s apple_developer_id.keychain-db
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '' apple_developer_id.keychain-db
+          xcrun notarytool store-credentials APPLE_ID_PASSWORD --apple-id bart.a.jacobs@gmail.com --team-id 6C42VUP45N --password "$APPLE_ID_PASSWORD"
+
       - name: Build release .zips
         shell: zsh {0}
         run: cd hicupp; PATH=$JAVA_HOME_17_X64/bin:$PATH . ./build-macos.sh
