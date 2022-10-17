@@ -1,20 +1,21 @@
 package interactivehicupp;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
 public class TreeDocumentFrame {
-  private static String[] pointsSourceTypeNames = {
+  private final static String[] pointsSourceTypeNames = {
     "Images",
     "General Point Sets"
   };
-  private static PointsSourceType[] pointsSourceTypes = {
+  private final static PointsSourceType[] pointsSourceTypes = {
     new ImagePointsSourceType(),
     new GeneralPointsSourceType()
   };
 
   public static void main(String[] args) {
-    showTreeDocumentFrame(0, true);
+    EventQueue.invokeLater(() -> showTreeDocumentFrame(0, true));
   }
   
   static void showTreeDocumentFrame(int pointsSourceTypeIndex, boolean allowSwitching) {
@@ -29,19 +30,17 @@ public class TreeDocumentFrame {
           System.exit(0);
       }
     });
-    Menu fileMenu = frame.getMenuBar().getMenu(0);
+    JMenu fileMenu = frame.getJMenuBar().getMenu(0);
     if (allowSwitching) {
       fileMenu.addSeparator();
-      Menu pointsSourceTypesMenu = new Menu("Points Source Types");
+      JMenu pointsSourceTypesMenu = new JMenu("Points Source Types");
       for (int i = 0; i < pointsSourceTypes.length; i++) {
         final int index = i;
-        MenuItem item = new MenuItem(pointsSourceTypeNames[i]);
-        item.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            if (frame.askSaveIfDirty()) {
-              frame.dispose();
-              showTreeDocumentFrame(index, true);
-            }
+        JMenuItem item = new JMenuItem(pointsSourceTypeNames[i]);
+        item.addActionListener(e -> {
+          if (frame.askSaveIfDirty()) {
+            frame.dispose();
+            EventQueue.invokeLater(() -> showTreeDocumentFrame(index, true));
           }
         });
         pointsSourceTypesMenu.add(item);
@@ -49,12 +48,10 @@ public class TreeDocumentFrame {
       fileMenu.add(pointsSourceTypesMenu);
     }
     fileMenu.addSeparator();
-    MenuItem fileExitMenuItem = new MenuItem("Exit");
-    fileExitMenuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        if (frame.askSaveIfDirty())
-          System.exit(0);
-      }
+    JMenuItem fileExitMenuItem = new JMenuItem("Exit");
+    fileExitMenuItem.addActionListener(e -> {
+      if (frame.askSaveIfDirty())
+        System.exit(0);
     });
     fileMenu.add(fileExitMenuItem);
     frame.setVisible(true);

@@ -12,8 +12,8 @@ package imageformats;
  * second line's pixels, etc.</p>
  */
 public final class RGBAImage {
-  private int[] pixels;
-  private int width;
+  private final int[] pixels;
+  private final int width;
 
   public RGBAImage(int[] pixels, int width) {
     this.pixels = pixels;
