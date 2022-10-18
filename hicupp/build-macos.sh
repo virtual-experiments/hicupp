@@ -9,11 +9,13 @@ done
 
 JPACKAGE_FLAGS=
 if [[ "$1" = "--sign" ]]
+then
   JPACKAGE_FLAGS=--mac-sign
 fi
 
 jpackage -p bin -m hicupp/interactivehicupp.ImagesMain --name HicuppForImages --type app-image $JPACKAGE_FLAGS
 if [[ "$1" = "--sign" ]]
+then
   ditto -c -k --keepParent --sequesterRsrc HicuppForImages.app HicuppForImages-macos-unstapled.zip
   xcrun notarytool submit HicuppForImages-macos-unstapled.zip --keychain-profile APPLE_ID_PASSWORD --wait
   rm HicuppForImages-macos-unstapled.zip
@@ -23,6 +25,7 @@ ditto -c -k --keepParent --sequesterRsrc HicuppForImages.app HicuppForImages-mac
 
 jpackage -p bin -m hicupp/interactivehicupp.GeneralMain --name HicuppForGeneralPointSets --type app-image $JPACKAGE_FLAGS
 if [[ "$1" = "--sign" ]]
+then
   ditto -c -k --keepParent --sequesterRsrc HicuppForGeneralPointSets.app HicuppForGeneralPointSets-macos-unstapled.zip
   xcrun notarytool submit HicuppForGeneralPointSets-macos-unstapled.zip --keychain-profile APPLE_ID_PASSWORD --wait
   rm HicuppForGeneralPointSets-macos-unstapled.zip
@@ -32,6 +35,7 @@ ditto -c -k --keepParent --sequesterRsrc HicuppForGeneralPointSets.app HicuppFor
 
 jpackage -p bin -m hicupp/hicupp.SequentialHicupp --name SequentialHicupp --type app-image $JPACKAGE_FLAGS
 if [[ "$1" = "--sign" ]]
+then
   ditto -c -k --keepParent --sequesterRsrc SequentialHicupp.app SequentialHicupp-macos-unstapled.zip
   xcrun notarytool submit SequentialHicupp-macos-unstapled.zip --keychain-profile APPLE_ID_PASSWORD --wait
   rm SequentialHicupp-macos-unstapled.zip
