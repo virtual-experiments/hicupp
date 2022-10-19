@@ -1,16 +1,17 @@
 package interactivehicupp;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class MessageBox extends Dialog {
+public class MessageBox extends JDialog {
   public static void showMessage(Frame owner, String message, String title) {
     showMessage(owner, message, title, new String[] {"OK"});
   }
   
   public static int showMessage(Frame owner, String message, String title, String[] options) {
     MessageBox messageBox = new MessageBox(owner, message, title, options);
-    messageBox.show();
+    messageBox.setVisible(true);
     return messageBox.option;
   }
   
@@ -18,16 +19,14 @@ public class MessageBox extends Dialog {
   
   private MessageBox(Frame owner, String message, String title, String[] options) {
     super(owner, title, true);
-    add(new Label(message), BorderLayout.CENTER);
-    Panel buttonPanel = new Panel(new FlowLayout());
+    add(new JLabel(message), BorderLayout.CENTER);
+    JPanel buttonPanel = new JPanel(new FlowLayout());
     for (int i = 0; i < options.length; i++) {
-      Button button = new Button(options[i]);
+      JButton button = new JButton(options[i]);
       final int index = i;
-      button.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          option = index;
-          dispose();
-        }
+      button.addActionListener(e -> {
+        option = index;
+        dispose();
       });
       buttonPanel.add(button);
     }
