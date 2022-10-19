@@ -176,7 +176,7 @@ public class LoadCSVDialog extends LoadDialog {
 
             columnsList.removeAll();
             columnsList.setListData(reader.getParameters());
-            columnsList.addSelectionInterval(0, reader.getParameters().length);
+            columnsList.addSelectionInterval(0, reader.getParameters().length - 1);
 
         } catch (IOException e) {
             MessageBox.showMessage(parent, "Could not read data file: " + e, getTitle());

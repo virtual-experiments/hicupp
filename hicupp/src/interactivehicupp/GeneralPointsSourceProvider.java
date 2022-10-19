@@ -127,15 +127,17 @@ public class GeneralPointsSourceProvider implements PointsSourceProvider {
       return pointsString;
     }
 
-    private class Inspector extends Frame {
-      private final TextArea textArea;
+    private class Inspector extends JFrame {
+      private final JTextArea textArea;
 
       public Inspector(int nodeNumber) {
         super("Node " + nodeNumber);
 
-        textArea = new TextArea();
+        textArea = new JTextArea();
         textArea.setEditable(false);
-        add(textArea, BorderLayout.CENTER);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        add(scrollPane, BorderLayout.CENTER);
 
         addWindowListener(new WindowAdapter() {
           @Override

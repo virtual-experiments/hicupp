@@ -2,33 +2,34 @@ package interactivehicupp;
 
 import hicupp.trees.Split;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 
-public class DecisionRule extends Frame {
+public class DecisionRule extends JFrame {
 
-    private final TextArea textArea;
+    private final JTextArea textArea;
     private final int nodeNumber;
 
     public DecisionRule(int nodeNumber) throws HeadlessException {
         super("Decision Rule Node " + nodeNumber + " - Interactive Hicupp");
         this.nodeNumber = nodeNumber;
 
-        textArea = new TextArea();
+        textArea = new JTextArea();
         textArea.setEditable(false);
         add(textArea, BorderLayout.CENTER);
 
-        MenuBar menuBar = new MenuBar();
-        setMenuBar(menuBar);
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
 
-        Menu fileMenu = new Menu("File");
+        JMenu fileMenu = new JMenu("File");
         fileMenu.setFont(DocumentFrame.menuFont);
         menuBar.add(fileMenu);
 
-        MenuItem save = new MenuItem("Save");
+        JMenuItem save = new JMenuItem("Save");
         save.addActionListener(e -> onSaveClick());
         fileMenu.add(save);
     }
