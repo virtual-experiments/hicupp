@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Objects;
 
 public class LoadCSVDialog extends LoadDialog {
     private final JTextField dataFileTextField = new JTextField();
@@ -196,5 +197,13 @@ public class LoadCSVDialog extends LoadDialog {
         coords = reader.getCoordinatesFromChosenColumns(columns);
         parameterNames = reader.getChosenParameters(columns);
         setVisible(false);
+    }
+
+    public void loadDefaultPoints() {
+        String file = Objects.requireNonNull(LoadCSVDialog.class.getResource("Gr4Dist6.csv")).getFile();
+        dataFileTextField.setText(file);
+        parameterFirstLineCheckBox.setSelected(true);
+        readFile();
+        loadPoints();
     }
 }

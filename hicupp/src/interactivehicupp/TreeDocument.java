@@ -224,7 +224,9 @@ public class TreeDocument extends JPanel implements Document, PointsSourceClient
       } else
         getLogTextArea().append("Loaded tree without input file.\n");
     } else if (this.pointsSourceProvider instanceof ImagePointsSourceProvider imagePointsSourceProvider)
-      imagePointsSourceProvider.loadDefaultImage();
+        imagePointsSourceProvider.loadDefaultImage();
+      else if (this.pointsSourceProvider instanceof GeneralPointsSourceProvider generalPointsSourceProvider)
+        generalPointsSourceProvider.loadDefaultPoints();
 
     Split rootSplit = tree.getRoot().getChild();
     if (rootSplit != null) {

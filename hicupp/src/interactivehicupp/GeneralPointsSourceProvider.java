@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -259,6 +260,12 @@ public class GeneralPointsSourceProvider implements PointsSourceProvider {
       }
     }
   }
+
+  public void loadDefaultPoints() {
+    loadDialog = new LoadCSVDialog(client.getFrame(), "Load Points from CSV File");
+    ((LoadCSVDialog)loadDialog).loadDefaultPoints();
+    loadPoints(loadDialog.getCoords());
+  }
   
   public GeneralPointsSourceProvider(PointsSourceClient client, Tree tree) {
     this.client = client;
@@ -333,9 +340,8 @@ public class GeneralPointsSourceProvider implements PointsSourceProvider {
       metadata = kilobytes + "\n" +
               type + "\n" +
               loadDialog.skipFirstLine() + " " + loadDialog.printChosenColumns();
-    } catch (IOException | NullPointerException exception) {
+    } catch (IOException | NullPointerException | InvalidPathException ignore) {
       metadata = "N/A\nN/A\nN/A";
-      exception.printStackTrace();
     }
   }
   
