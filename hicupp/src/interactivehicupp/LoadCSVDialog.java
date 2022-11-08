@@ -7,6 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class LoadCSVDialog extends LoadDialog {
@@ -200,10 +202,16 @@ public class LoadCSVDialog extends LoadDialog {
     }
 
     public void loadDefaultPoints() {
-        String file = Objects.requireNonNull(LoadCSVDialog.class.getResource("Gr4Dist6.csv")).getFile();
-        dataFileTextField.setText(file);
-        parameterFirstLineCheckBox.setSelected(true);
-        readFile();
-        loadPoints();
+        try {
+            InputStream file = Objects.requireNonNull(LoadCSVDialog.class.getResourceAsStream("Gr4Dist6.csv"));
+            String text = new String(file.readAllBytes(), StandardCharsets.UTF_8);
+            reader = new CSVFileFormat(text);
+
+            columnsList.removeAll();
+            columnsList.setListData(reader.getParameters());
+            columnsList.addSelectionInterval(0, reader.getParameters().length - 1);
+
+            loadPoints();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }

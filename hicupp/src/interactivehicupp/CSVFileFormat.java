@@ -1,8 +1,6 @@
 package interactivehicupp;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 public class CSVFileFormat {
@@ -11,7 +9,16 @@ public class CSVFileFormat {
 
     public CSVFileFormat(String file, boolean firstLineParameter) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
+        read(reader, firstLineParameter);
+    }
 
+    public CSVFileFormat(String text) throws IOException {
+        Reader inputString = new StringReader(text);
+        BufferedReader reader = new BufferedReader(inputString);
+        read(reader, true);
+    }
+
+    public void read(BufferedReader reader, boolean firstLineParameter) throws IOException {
         String line;
         int lineNumber = 0;
         int numberOfDimensions = 0;
