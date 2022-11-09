@@ -103,7 +103,7 @@ jobs:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
 
-      - if: ${{ github.repository == 'virtual-experiments/hicupp' && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      - if: ${{ github.repository == 'virtual-experiments/hicupp' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         name: Install Apple Developer ID
         env:
           APPLE_DEVELOPER_ID: ${{ secrets.APPLE_DEVELOPER_ID }}
@@ -118,12 +118,12 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '' apple_developer_id.keychain-db
           xcrun notarytool store-credentials APPLE_ID_PASSWORD --apple-id bart.a.jacobs@gmail.com --team-id 6C42VUP45N --password "$APPLE_ID_PASSWORD"
 
-      - if: ${{ github.repository == 'virtual-experiments/hicupp' && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      - if: ${{ github.repository == 'virtual-experiments/hicupp' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         name: Build signed release .zips
         shell: zsh {0}
         run: cd hicupp; PATH=$JAVA_HOME_17_X64/bin:$PATH . ./build-macos.sh --sign
 
-      - if: ${{ !(github.repository == 'virtual-experiments/hicupp' && github.event_name == 'push' && github.ref == 'refs/heads/master') }}
+      - if: ${{ !(github.repository == 'virtual-experiments/hicupp' && github.event_name == 'push' && github.ref == 'refs/heads/main') }}
         name: Build unsigned release .zips
         shell: zsh {0}
         run: cd hicupp; PATH=$JAVA_HOME_17_X64/bin:$PATH . ./build-macos.sh
