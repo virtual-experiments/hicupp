@@ -1,5 +1,8 @@
 package imageformats;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 
 public class BMPFileFormat {
@@ -25,7 +28,7 @@ public class BMPFileFormat {
                        
     byte[] header = new byte[BITMAPFILEHEADER.size + BITMAPCOREHEADER.size];
     fileHeader.write(header, 0);
-    coreHeader.write(header, fileHeader.size);
+    coreHeader.write(header, BITMAPFILEHEADER.size);
     
     RandomAccessFile f = new RandomAccessFile(filename, "rw");
     f.write(header);
@@ -47,15 +50,151 @@ public class BMPFileFormat {
     
     f.close();
   }
-  
+
+  private static RandomAccessFile convertImage(String filename) throws IOException {
+    BufferedImage original = ImageIO.read(new File(filename));
+    if (original == null) throw new IOException("Loaded a non image file.");
+
+    if (filename.contains("png")) {
+      System.out.println("Attempting to convert PNG.");
+
+      BufferedImage output = new BufferedImage(
+              original.getWidth(),
+              original.getHeight(),
+              BufferedImage.TYPE_INT_RGB);
+
+      // replace transparent with white background
+      output.createGraphics()
+              .drawImage(original,
+                      0,
+                      0,
+                      Color.WHITE,
+                      null);
+
+      original = output;
+    }
+
+    try {
+      System.out.println("Attempting to convert image.");
+      ImageIO.write(original, "bmp", new File("./temp.bmp"));
+    } catch (IOException exception) {
+      throw new IOException("Please run the program in a different directory or as administrator " +
+              "as the program don't have the permission to create a file here.");
+    }
+
+    File output = new File("./temp.bmp");
+
+    if (output.exists())
+      System.out.println("BMP written successfully.");
+    else
+      throw new IOException("Unable to convert to BMP file.");
+
+    return new RandomAccessFile("./temp.bmp", "r");
+  }
+
+  private static byte[] readBytes(byte[] original, byte[] read, int pos) {
+    System.arraycopy(original, pos, read, 0, read.length);
+    return read;
+  }
+
+  public static RGBAImage loadDefaultImage() throws IOException {
+    InputStream stream = BMPFileFormat.class.getResourceAsStream("parrot.bmp");
+    assert stream != null;
+    byte[] bytes = stream.readAllBytes();
+
+    byte[] fileHeaderBuffer = new byte[BITMAPFILEHEADER.size];
+    readBytes(bytes, fileHeaderBuffer, 0);
+
+    BITMAPFILEHEADER fileHeader = new BITMAPFILEHEADER();
+    fileHeader.read(fileHeaderBuffer, 0);
+
+    byte[] infoHeaderBuffer = new byte[fileHeader.bfOffBits - BITMAPFILEHEADER.size];
+    readBytes(bytes, infoHeaderBuffer, BITMAPFILEHEADER.size);
+
+    boolean topDown;
+    int width;
+    int height;
+    int bitCount;
+
+    if (BITMAPCOREHEADER.recognize(infoHeaderBuffer, 0)) {
+      BITMAPCOREHEADER coreHeader = new BITMAPCOREHEADER();
+      coreHeader.read(infoHeaderBuffer, 0);
+
+      topDown = false;
+      width = coreHeader.bcWidth;
+      height = coreHeader.bcHeight;
+      bitCount = coreHeader.bcBitCount;
+    } else
+      // Insert BITMAPV5HEADER, BITMAPV4HEADER here if desired.
+      if (BITMAPINFOHEADER.recognize(infoHeaderBuffer, 0)) {
+        BITMAPINFOHEADER infoHeader = new BITMAPINFOHEADER();
+        infoHeader.read(infoHeaderBuffer, 0);
+
+        topDown = infoHeader.biHeight < 0;
+        width = infoHeader.biWidth;
+        height = Math.abs(infoHeader.biHeight);
+        bitCount = infoHeader.biBitCount;
+
+        if (infoHeader.biCompression != BITMAPINFOHEADER.BI_RGB)
+          throw new IOException("Unsupported compression method: " +
+                  infoHeader.biCompression +
+                  "; only uncompressed images supported.");
+      } else
+        throw new IOException("BMP file format version currently not supported.");
+
+    RGBAImage image;
+    if (bitCount == 24) {
+      int pixelCount = width * height;
+      int[] pixels = new int[pixelCount];
+      int scanLine = width * 3;
+      int bufferLength = scanLine % 4 == 0 ? scanLine : scanLine + 4 - scanLine % 4;
+      byte[] buffer = new byte[bufferLength];
+
+      for (int line = 0; line < height; line++) {
+        readBytes(bytes, buffer, fileHeader.bfOffBits + line * bufferLength);
+        int i = (topDown ? line : (height - line - 1)) * width;
+        for (int k = 0; k < scanLine;) {
+          int pixel = (buffer[k++] & 0xff) | ((buffer[k++] & 0xff) << 8) | (buffer[k++] << 16) | 0xff000000;
+          pixels[i++] = pixel;
+        }
+      }
+
+      image = new RGBAImage(pixels, width);
+    } else if (bitCount == 32) {
+      int pixelCount = width * height;
+      int[] pixels = new int[pixelCount];
+      int bufferLength = width * 4;
+      byte[] buffer = new byte[bufferLength];
+      for (int line = 0; line < height; line++) {
+        readBytes(bytes, buffer, fileHeader.bfOffBits + line * bufferLength);
+        int i = (topDown ? line : (height - line - 1)) * width;
+        for (int k = 0; k < bufferLength; ) {
+          int pixel = (buffer[k++] & 0xff) | ((buffer[k++] & 0xff) << 8) | (buffer[k++] << 16) | 0xff000000;
+          pixels[i] = pixel;
+          k++;
+        }
+      }
+
+      image = new RGBAImage(pixels, width);
+    }
+    else
+      throw new IOException("Unsupported number of bits per pixel: " + bitCount);
+
+    stream.close();
+
+    return image;
+  }
+
   public static RGBAImage readImage(String filename) throws IOException {
-    RandomAccessFile file = new RandomAccessFile(filename, "r");
-    
+    RandomAccessFile file;
+    if (filename.endsWith(".bmp")) file = new RandomAccessFile(filename, "r");
+    else file = convertImage(filename);
+    return readImage(file);
+  }
+
+  private static RGBAImage readImage(RandomAccessFile file) throws IOException {
     byte[] fileHeaderBuffer = new byte[BITMAPFILEHEADER.size];
     file.readFully(fileHeaderBuffer);
-    
-    if (!BITMAPFILEHEADER.recognize(fileHeaderBuffer, 0))
-      throw new IOException("The file is not a BMP file.");
     
     BITMAPFILEHEADER fileHeader = new BITMAPFILEHEADER();
     fileHeader.read(fileHeaderBuffer, 0);
@@ -67,33 +206,33 @@ public class BMPFileFormat {
     int width;
     int height;
     int bitCount;
-    
+
     if (BITMAPCOREHEADER.recognize(infoHeaderBuffer, 0)) {
       BITMAPCOREHEADER coreHeader = new BITMAPCOREHEADER();
       coreHeader.read(infoHeaderBuffer, 0);
-      
+
       topDown = false;
       width = coreHeader.bcWidth;
       height = coreHeader.bcHeight;
       bitCount = coreHeader.bcBitCount;
-    } else 
+    } else
       // Insert BITMAPV5HEADER, BITMAPV4HEADER here if desired.
       if (BITMAPINFOHEADER.recognize(infoHeaderBuffer, 0)) {
       BITMAPINFOHEADER infoHeader = new BITMAPINFOHEADER();
       infoHeader.read(infoHeaderBuffer, 0);
-      
+
       topDown = infoHeader.biHeight < 0;
       width = infoHeader.biWidth;
       height = Math.abs(infoHeader.biHeight);
       bitCount = infoHeader.biBitCount;
-      
+
       if (infoHeader.biCompression != BITMAPINFOHEADER.BI_RGB)
         throw new IOException("Unsupported compression method: " +
                               infoHeader.biCompression +
                               "; only uncompressed images supported.");
     } else
       throw new IOException("BMP file format version currently not supported.");
-    
+
     RGBAImage image;
     if (bitCount == 24)
       image = read24BitImageBits(file, topDown, width, height);
@@ -101,10 +240,20 @@ public class BMPFileFormat {
       image = read32BitImageBits(file, topDown, width, height);
     else
       throw new IOException("Unsupported number of bits per pixel: " + bitCount);
-    
+
     file.close();
-    
+    removeTempImage();
+
     return image;
+  }
+
+  private static void removeTempImage() {
+    File file = new File("./temp.bmp");
+    if (file.exists()) {
+      if (file.delete()) {
+        System.out.println("Temporary file deleted.");
+      } else System.out.println("Unable to delete temporary file.");
+    }
   }
   
   private static RGBAImage read24BitImageBits(RandomAccessFile file,

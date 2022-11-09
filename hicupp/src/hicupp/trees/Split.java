@@ -1,5 +1,6 @@
 package hicupp.trees;
 
+import java.util.ArrayList;
 import java.util.Observable;
 
 public final class Split extends Observable {
@@ -10,6 +11,10 @@ public final class Split extends Observable {
   private final double[] axis;
   private double threshold;
 
+  private int splitProjectionIndex;
+  private int optimisationAlgorithmIndex;
+  private int splitIterations;
+
   Split(Tree tree, Node parent, double[] axis, double threshold) {
     this.tree = tree;
     this.parent = parent;
@@ -18,6 +23,10 @@ public final class Split extends Observable {
     int leftChildSerialNumber = 2 * parent.getSerialNumber();
     leftChild = new Node(tree, this, leftChildSerialNumber);
     rightChild = new Node(tree, this, leftChildSerialNumber + 1);
+
+    splitProjectionIndex = -1;
+    optimisationAlgorithmIndex = -1;
+    splitIterations = 0;
   }
   
   public Node getParent() {
@@ -33,7 +42,7 @@ public final class Split extends Observable {
   }
 
   public double[] getAxis() {
-    return (double[]) axis.clone();
+    return axis.clone();
   }
   
   public double getThreshold() {
@@ -49,9 +58,7 @@ public final class Split extends Observable {
   
   public double evaluate(double[] coords, int index) {
     double value = 0.0;
-    int ndims = axis.length;
-    for (int i = 0; i < ndims; i++)
-      value += coords[index++] * axis[i];
+    for (double axi : axis) value += coords[index++] * axi;
     return value;
   }
 
@@ -75,5 +82,29 @@ public final class Split extends Observable {
     return (classify(point, index) ?
             leftChild :
             rightChild).computeClass(point, index);
+  }
+
+  public int getSplitProjectionIndex() {
+    return splitProjectionIndex;
+  }
+
+  public void setSplitProjectionIndex(int splitProjectionIndex) {
+    this.splitProjectionIndex = splitProjectionIndex;
+  }
+
+  public int getSplitIterations() {
+    return splitIterations;
+  }
+
+  public void setSplitIterations(int splitIterations) {
+    this.splitIterations = splitIterations;
+  }
+
+  public int getOptimisationAlgorithmIndex() {
+    return optimisationAlgorithmIndex;
+  }
+
+  public void setOptimisationAlgorithmIndex(int optimisationAlgorithmIndex) {
+    this.optimisationAlgorithmIndex = optimisationAlgorithmIndex;
   }
 }
